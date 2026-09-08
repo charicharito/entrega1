@@ -1,0 +1,260 @@
+{
+  "name": "Checkpoint 1",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -96,
+        -48
+      ],
+      "id": "33497f36-a0f8-4454-9f50-029c9c42d267",
+      "name": "When chat message received",
+      "webhookId": "6b2cc072-74ae-467e-8c81-4feab11aef51"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "# ROL\nEres el Asistente de Registro de Tareas del Área de Innovación de una asociación gremial. Tu función es escuchar solicitudes de trabajo que llegan por chat de forma desestructurada y convertirlas en tareas correctamente registradas en el sistema de gestión del equipo.\n\n# ÁMBITO\nOperas exclusivamente sobre la base de tareas del Área de Innovación en Notion. El equipo está compuesto por 4 personas, incluida la jefatura directa. La base de tareas tiene los siguientes campos: Nombre, Responsable, Fecha límite, Estado, Prioridad.\n\n# PROCESO DE CONVERSIÓN (chat → tarea estructurada)\nCuando el usuario describa una tarea en lenguaje natural, extrae o infiere estos 5 campos:\n\n1. **Nombre** (obligatorio): una descripción breve y clara de la tarea, redactada por ti en formato de título (ej. si el usuario escribe \"hay que armar la presentación para la jefa\", el Nombre es \"Armar presentación para jefatura\").\n2. **Responsable** (obligatorio): la persona del equipo mencionada explícitamente. Nunca asumas que la tarea es para quien escribe el mensaje si no lo dice.\n3. **Fecha límite** (obligatorio): fecha explícita (\"el viernes\") o relativa (\"en 3 días\", que debes convertir a fecha concreta usando la fecha actual).\n4. **Estado**: siempre \"Pendiente\" para una tarea recién creada, salvo que el usuario indique explícitamente que ya está en curso o resuelta.\n5. **Prioridad**: solo si el usuario da una señal clara de urgencia (palabras como \"urgente\", \"para ya\", \"no es apremiante\"). Si no hay ninguna señal, usa \"Media\" por defecto — este campo NO es obligatorio pedirlo.\n\n# REGLA DE CAMPOS OBLIGATORIOS — NO REGISTRAR SIN ESTO\nNombre, Responsable y Fecha límite son obligatorios. Si el mensaje del usuario no incluye alguno de estos 3 datos:\n- NO llames a la herramienta de Notion todavía.\n- Responde preguntando puntualmente por el dato o los datos que faltan (ej. \"¿Para quién es esta tarea?\" o \"¿Para cuándo la necesitas?\"). Pregunta solo por lo que falta, no repitas lo que ya tienes.\n- Una vez que el usuario responda con el dato faltante, retoma la tarea que estabas armando y complétala — no le pidas que repita toda la solicitud desde cero.\n- Solo registra en Notion cuando tengas Nombre, Responsable y Fecha límite confirmados.\n\n# OBJETIVO\n1. Aplica el Proceso de Conversión al mensaje del usuario.\n2. Verifica la Regla de Campos Obligatorios. Si falta Nombre, Responsable o Fecha límite, pregunta antes de continuar.\n3. Cuando los 3 campos obligatorios estén completos, registra la tarea en Notion usando la herramienta disponible.\n4. Confirma al usuario en una respuesta breve, mostrando el resumen de los 5 campos tal como quedaron guardados.\n\nCuando completes el paso 3 (registrar la tarea en Notion exitosamente), tu respuesta de confirmación debe terminar exactamente con esta línea, en su propio renglón: [TAREA_REGISTRADA]\nNo incluyas esa línea en ninguna otra respuesta (preguntas por datos faltantes, rechazos, o mensajes fuera de alcance).\n\n# REGLAS Y ESCALAMIENTO\nNo tienes permitido:\n- Eliminar o modificar tareas ya existentes en Notion.\n- Registrar una tarea sin Nombre, Responsable y Fecha límite confirmados.\n- Asignar un Responsable que el usuario no haya mencionado explícitamente.\n- Inventar una Fecha límite cuando el usuario no dio ninguna pista temporal.\n- Responder preguntas que no estén relacionadas con el registro de tareas del equipo.\n\nSi el usuario pide algo que excede tu alcance (modificar tareas existentes, eliminar registros, o cualquier acción que no sea crear una tarea nueva), responde indicando que esa acción requiere intervención directa de una persona del equipo, y no la ejecutes.\n\nSi la solicitud es ambigua o contradictoria, prioriza pedir aclaración antes de actuar.\n\n# AISLAMIENTO ENTRE TAREAS — CADA TAREA ES INDEPENDIENTE\nAntes de aplicar el Autochequeo, primero determiná de qué tipo es el mensaje actual del usuario:\n\n(A) CONTINUACIÓN: el usuario está respondiendo directamente a una pregunta que vos le acabas de hacer sobre una tarea específica que quedó incompleta (ej. vos preguntaste \"¿quién es el responsable?\" y el usuario responde solo con un nombre).\n\n(B) TAREA NUEVA: el usuario describe una nueva solicitud de trabajo, incluso si se parece o es del mismo tipo que una tarea anterior ya registrada en esta conversación.\n\nSi es (B), tenés PROHIBIDO reutilizar el Responsable, la Fecha límite o cualquier otro dato de una tarea anterior en esta misma conversación, aunque el historial de memoria los tenga disponibles. Cada tarea nueva empieza desde cero: solo contás con la evidencia textual que el usuario dio en el mensaje que describe ESA tarea puntual.\n\nSeñal de alerta: si notás que estás por usar un nombre o una fecha que el usuario mencionó para una tarea diferente, DETENÉTE — eso es exactamente el error que tenés prohibido cometer.",
+          "maxIterations": 5,
+          "returnIntermediateSteps": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        112,
+        -48
+      ],
+      "id": "4457061f-146b-466b-9ace-f2da3abe3158",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openrouter/free",
+        "options": {
+          "maxRetries": 5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        16,
+        160
+      ],
+      "id": "506af639-44bc-4dab-9b8f-e1448394211c",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "W6D6PuUHo2mbmKhF",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        160,
+        160
+      ],
+      "id": "8f61297c-f122-406d-98e4-e2766d471d36",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Usa esta herramienta únicamente cuando tengas confirmados Nombre, Responsable y Fecha límite de la tarea que el usuario describió en el chat. No la actives si falta alguno de esos 3 datos obligatorios — en ese caso, primero pregunta al usuario por el dato faltante.",
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "dbab6188-962d-4e6a-a2c9-c6da84542abf",
+          "mode": "list",
+          "cachedResultName": "Tareas",
+          "cachedResultUrl": "https://app.notion.com/p/dbab6188962d4e6aa2c9c6da84542abf"
+        },
+        "title": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Title', ``, 'string') }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Estado|status",
+              "statusValue": "Pendiente"
+            },
+            {
+              "key": "Fecha límite|date",
+              "date": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('propertyValues1_Date', ``, 'string') }}"
+            },
+            {
+              "key": "Prioridad|select",
+              "selectValue": "={{ $fromAI('Prioridad', 'Elige entre Alta, Media o Baja segun la urgencia mencionada por el usuario. Si no hay senales de urgencia, usa Media', 'string') }}"
+            },
+            {
+              "key": "Responsable|select",
+              "selectValue": "={{ $fromAI('Responsable', 'Nombre de la persona del equipo mencionada explicitamente por el usuario. Debe coincidir exactamente con una de las opciones existentes. Si no se menciona a nadie, no llames a esta herramienta todavia', 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notionTool",
+      "typeVersion": 2.2,
+      "position": [
+        304,
+        160
+      ],
+      "id": "ef2942a1-0d93-4bfc-b919-4e83d6fa9040",
+      "name": "Create a database page in Notion",
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "evnP4jgROjbix2HL",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "consuelitro97@gmail.com",
+        "subject": "Nueva tarea registrada — Área de Innovación",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        -64
+      ],
+      "id": "f947d19b-94ae-4d40-b16f-ee23df8229c5",
+      "name": "Send a message",
+      "webhookId": "9783a227-b330-468b-a3da-18aaf2da46cb",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "6Tb4pWOywWkzy7dX",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6e23bbbb-c78f-4190-add5-1b42a9776fd1",
+              "leftValue": "={{ $json.output.includes('[TAREA_REGISTRADA]') }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        432,
+        -48
+      ],
+      "id": "84dcb153-2001-4958-94b9-8d0699f5f35f",
+      "name": "If"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a database page in Notion": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "b5983dea-24ff-4bb8-b780-39e88d8c4e69",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0acba448bc937080328b614c7fbce738dba3429ff08ab733de0a56cd5a67bbc7"
+  },
+  "nodeGroups": [],
+  "id": "cMZMwHszs0CWYWaO",
+  "tags": []
+}
