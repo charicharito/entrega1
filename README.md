@@ -33,4 +33,4 @@ como capa de observabilidad.
 
 ## Archivo del checkpoint
 
-`checkpoint1_nombre_apellido.json` — exportación completa del flujo de n8n.
+`checkpoint1_consuelo_bianchi.json` — exportación completa del flujo de n8n.
