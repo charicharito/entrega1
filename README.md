@@ -13,13 +13,13 @@ como capa de observabilidad.
 - **Memoria:** Simple Memory (buffer window) para sostener el flujo de preguntas/respuestas
 ## Evidencia de funcionamiento
 **Flujo completo en n8n:**
-![Flujo completo en n8n](Captura de pantalla 1.png)
+![Flujo completo en n8n](Captura-de-pantalla-1.png)
 
 **Prueba en chat — pregunta por dato faltante:**
-![Prueba en chat](Captura de pantalla 2.png)
+![Prueba en chat](Captura-de-pantalla-2.png)
 **Tarea registrada en Notion:**
-![Tarea registrada en Notion](Captura de pantalla 3.png)
+![Tarea registrada en Notion](Captura-de-pantalla-3.png)
 **Notificación recibida por Gmail:**
-![Notificación por Gmail](Captura de pantalla 4.png)
+![Notificación por Gmail](Captura-de-pantalla-4.png)
 ## Archivo del checkpoint
 checkpoint1_consuelo_bianchi.json — exportación completa del flujo de n8n.
